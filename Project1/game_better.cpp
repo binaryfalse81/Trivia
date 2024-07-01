@@ -81,7 +81,7 @@ Player* GameBetter::GetCurPlayer()
 
 bool GameBetter::IsEven(int roll)
 {
-    return (roll % 2 == 0);
+    return (roll % 2 == 0); // commit test
 }
 
 void GameBetter::askQuestion(void)
