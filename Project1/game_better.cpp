@@ -3,20 +3,46 @@
 
 using namespace std;
 
-GameBetter::GameBetter() : currentPlayer{ 0 }, places{}, purses{}
+GameBetter::GameBetter() : currentPlayer{ 0 }, playerCnt{ 0 }
 {
-    for (int i = 0; i < 50; i++) {
-        string str1 = "Pop Question " + to_string(i);
-        popQuestions.push_back(str1);
+    for (int i = 0; i < MAX_PLAYER_CNT; i++)
+    {
+        aPlayers[i] = new Player{"", 0, 0, false};
+    }
 
-        string str2 = "Science Question " + to_string(i);
-        scienceQuestions.push_back(str2);
-
-        string str3 = "Sports Question " + to_string(i);
-        sportsQuestions.push_back(str3);
-
+    for (int i = 0; i < 50; i++)
+    {
+        popQuestions.push_back(createPopQuestion(i));
+        scienceQuestions.push_back(createScienceQuestion(i));
+        sportsQuestions.push_back(createSportQuestion(i));
         rockQuestions.push_back(createRockQuestion(i));
     }
+}
+
+GameBetter::~GameBetter()
+{
+    for (int i = 0; i < MAX_PLAYER_CNT; i++)
+    {
+        delete(aPlayers[i]);
+    }
+}
+
+string GameBetter::createPopQuestion(int index)
+{
+    string indexStr = "Pop Question " + to_string(index);
+    return indexStr;
+}
+
+string GameBetter::createScienceQuestion(int index)
+{
+    string indexStr = "Science Question " + to_string(index);
+    return indexStr;
+}
+
+string GameBetter::createSportQuestion(int index)
+{
+    string indexStr = "Sports Question " + to_string(index);
+    return indexStr;
 }
 
 string GameBetter::createRockQuestion(int index)
@@ -25,182 +51,143 @@ string GameBetter::createRockQuestion(int index)
     return indexStr;
 }
 
-bool GameBetter::isPlayable()
-{
-    return (howManyPlayers() >= 2);
-}
-
 bool GameBetter::add(string playerName)
 {
-    players.push_back(playerName);
-    places[howManyPlayers() - 1] = 0;
-    purses[howManyPlayers() - 1] = 0;
-    inPenaltyBox[howManyPlayers() - 1] = false;
+    aPlayers[playerCnt]->setName(playerName);
+    aPlayers[playerCnt]->setPlaces(0);
+    aPlayers[playerCnt]->setPurses(0);
+    aPlayers[playerCnt]->setInPenaltyBox(false);
+    playerCnt++;
 
     cout << playerName << " was added" << endl;
-    cout << "They are player number " << players.size() << endl;
+    cout << "They are player number " << playerCnt << endl;
     return true;
-}
-
-int GameBetter::howManyPlayers()
-{
-    return (int)players.size();
 }
 
 void GameBetter::rolling(int roll)
 {
-    cout << players[currentPlayer] << " is the current player" << endl;
+    string name = GetCurPlayer()->getName();
+    cout << name << " is the current player" << endl;
     cout << "They have rolled a " << roll << endl;
 
-    if (inPenaltyBox[currentPlayer])
+    if (GetCurPlayer()->getInPenaltyBox())
     {
-        if (roll % 2 != 0)
+        if (IsEven(roll))
         {
-            isGettingOutOfPenaltyBox = true;
-
-            cout << players[currentPlayer] << " is getting out of the penalty box" << endl;
-            places[currentPlayer] = places[currentPlayer] + roll;
-            if (places[currentPlayer] > 11) places[currentPlayer] = places[currentPlayer] - 12;
-
-            cout << players[currentPlayer] << "'s new location is " << places[currentPlayer] << endl;
-            cout << "The category is " << currentCategory() << endl;
-            askQuestion();
+            cout << name << " is not getting out of the penalty box" << endl;
+            return;
         }
         else
         {
-            cout << players[currentPlayer] << " is not getting out of the penalty box" << endl;
-            isGettingOutOfPenaltyBox = false;
+            GetCurPlayer()->setInPenaltyBox(false);
+            cout << name << " is getting out of the penalty box" << endl;
         }
-
     }
-    else
+
+    GetCurPlayer()->setPlaces(GetCurPlayer()->getPlaces() + roll);
+    if (GetCurPlayer()->getPlaces() > 11)
     {
-        places[currentPlayer] = places[currentPlayer] + roll;
-        if (places[currentPlayer] > 11) places[currentPlayer] = places[currentPlayer] - 12;
-
-        cout << players[currentPlayer] << "'s new location is " << places[currentPlayer] << endl;
-        cout << "The category is " << currentCategory() << endl;
-        askQuestion();
+        GetCurPlayer()->setPlaces(GetCurPlayer()->getPlaces() - 12);
     }
+    cout << GetCurPlayer()->getName() << "'s new location is " << GetCurPlayer()->getPlaces() << endl;
+    cout << "The category is " << currentCategory() << endl;
+
+    askQuestion();
 }
 
-void GameBetter::askQuestion()
+Player* GameBetter::GetCurPlayer()
 {
-    if (currentCategory() == "Pop")
+    return aPlayers[currentPlayer];
+}
+
+bool GameBetter::IsEven(int roll)
+{
+    return (roll % 2 == 0);
+}
+
+void GameBetter::askQuestion(void)
+{
+    string strCurCategory = currentCategory();
+
+    if (strCurCategory == Category::POP)
     {
         cout << popQuestions.front() << endl;
         popQuestions.pop_front();
     }
-
-    if (currentCategory() == "Science")
+    else if (strCurCategory == Category::SCIENCE)
     {
         cout << scienceQuestions.front() << endl;
         scienceQuestions.pop_front();
     }
-
-    if (currentCategory() == "Sports")
+    else if (strCurCategory == Category::SPORTS)
     {
         cout << sportsQuestions.front() << endl;
         sportsQuestions.pop_front();
     }
-
-    if (currentCategory() == "Rock")
+    else
     {
         cout << rockQuestions.front() << endl;
         rockQuestions.pop_front();
     }
 }
 
-string GameBetter::currentCategory()
+string GameBetter::currentCategory(void)
 {
-    if (places[currentPlayer] == 0) return "Pop";
-    if (places[currentPlayer] == 4) return "Pop";
-    if (places[currentPlayer] == 8) return "Pop";
-    if (places[currentPlayer] == 1) return "Science";
-    if (places[currentPlayer] == 5) return "Science";
-    if (places[currentPlayer] == 9) return "Science";
-    if (places[currentPlayer] == 2) return "Sports";
-    if (places[currentPlayer] == 6) return "Sports";
-    if (places[currentPlayer] == 10) return "Sports";
-    return "Rock";
+    int mod = GetCurPlayer()->getPlaces() % MAX_CATEGORY_CNT;
+    switch (mod)
+    {
+    case 0:
+        return Category::POP;
+    case 1:
+        return Category::SCIENCE;
+    case 2:
+        return Category::SPORTS;
+    }
+
+    return Category::ROCK;
 }
 
 bool GameBetter::wasCorrectlyAnswered()
 {
-    if (inPenaltyBox[currentPlayer])
-    {
-        if (isGettingOutOfPenaltyBox)
-        {
-            inPenaltyBox[currentPlayer] = false;
-            cout << "Answer was correct!!!!" << endl;
+    bool ret = true;
 
-            purses[currentPlayer]++;
-            cout << players[currentPlayer] << " now has "
-                << purses[currentPlayer] << " Gold Coins." << endl;
-
-            bool winner = didPlayerWin();
-            currentPlayer++;
-            if (currentPlayer == players.size()) currentPlayer = 0;
-
-            return winner;
-        }
-        else
-        {
-            currentPlayer++;
-            if (currentPlayer == players.size()) currentPlayer = 0;
-            return true;
-        }
-    }
-    else
+    if (false == GetCurPlayer()->getInPenaltyBox())
     {
         cout << "Answer was correct!!!!" << endl;
+        GetCurPlayer()->increasePurses();
+        cout << GetCurPlayer()->getName() << " now has "
+            << GetCurPlayer()->getPurses() << " Gold Coins." << endl;
 
-        purses[currentPlayer]++;
-        cout << players[currentPlayer] << " now has "
-            << purses[currentPlayer] << " Gold Coins." << endl;
+        ret =  didPlayerWin();
+    }
 
-        bool winner = didPlayerWin();
-        currentPlayer++;
-        if (currentPlayer == players.size()) currentPlayer = 0;
+    increaseCurPlayer();
+    return ret;
+}
 
-        return winner;
+void GameBetter::increaseCurPlayer()
+{
+    currentPlayer++;
+    if (currentPlayer == playerCnt)
+    {
+        currentPlayer = 0;
     }
 }
 
 bool GameBetter::wrongAnswer()
 {
-    if (inPenaltyBox[currentPlayer])
-    {
-        if (isGettingOutOfPenaltyBox)
-        {
-            cout << "Question was incorrectly answered" << endl;
-            cout << players[currentPlayer] + " was sent to the penalty box" << endl;
-            inPenaltyBox[currentPlayer] = true;
-
-            currentPlayer++;
-            if (currentPlayer == players.size()) currentPlayer = 0;
-            return true;
-        }
-        else
-        {
-            currentPlayer++;
-            if (currentPlayer == players.size()) currentPlayer = 0;
-            return true;
-        }
-    }
-    else
+    if (false == GetCurPlayer()->getInPenaltyBox())
     {
         cout << "Question was incorrectly answered" << endl;
-        cout << players[currentPlayer] + " was sent to the penalty box" << endl;
-        inPenaltyBox[currentPlayer] = true;
-
-        currentPlayer++;
-        if (currentPlayer == players.size()) currentPlayer = 0;
-        return true;
+        cout << GetCurPlayer()->getName() + " was sent to the penalty box" << endl;
+        GetCurPlayer()->setInPenaltyBox(true);
     }
+    
+    increaseCurPlayer();
+    return true;
 }
 
-bool GameBetter::didPlayerWin()
+bool GameBetter::didPlayerWin(void)
 {
-    return !(purses[currentPlayer] == 6);
+    return !(GetCurPlayer()->getPurses() == MAX_COIN_CNT);
 }
