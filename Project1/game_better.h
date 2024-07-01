@@ -24,27 +24,27 @@ class Player
 {
 public:
     Player(string name)
-        : name{ name }, places{ 0 }, purses{ 0 }, isJail{ false } { }
-
-    void setName(string name)
-    {
-        this->name = name;
-    }
+        : name{ name }, places{ 0 }, coin{ 0 }, isJail{ false } { }
     void setPlaces(int places)
     {
         this->places = places;
     }
-    void setPurses(int purses)
+    void increaseCoin(void)
     {
-        this->purses = purses;
+        this->coin++;
+        cout << "Answer was correct!!!!" << endl;
+        cout << name << " now has "
+            << coin << " Gold Coins." << endl;
     }
-    void increasePurses(void)
+    void enterJail(void)
     {
-        this->purses++;
+        this->isJail = true;
+        cout << "Question was incorrectly answered" << endl;
+        cout << name + " was sent to the penalty box" << endl;
     }
-    void setIsJail(bool isJail)
+    void exitJail(void)
     {
-        this->isJail = isJail;
+        this->isJail = false;
     }
 
     string getName(void)
@@ -55,11 +55,20 @@ public:
     {
         return this->places;
     }
-    int getPurses(void)
+    void moveNextPlace(int nextRoll)
     {
-        return this->purses;
+        places += nextRoll;
+        if (places > 11)
+        {
+            places -= 12;
+        }
+        cout << name << "'s new location is " << places << endl;
     }
-    bool getIsJail(void)
+    int getCoin(void)
+    {
+        return this->coin;
+    }
+    bool isInJail(void)
     {
         return this->isJail;
     }
@@ -67,7 +76,7 @@ public:
 private:
     string name;
     int places;
-    int purses;
+    int coin;
     bool isJail;
 };
 

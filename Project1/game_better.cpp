@@ -53,7 +53,7 @@ void GameBetter::rolling(int roll)
     cout << name << " is the current player" << endl;
     cout << "They have rolled a " << roll << endl;
 
-    if (GetCurPlayer()->getIsJail())
+    if (GetCurPlayer()->isInJail())
     {
         if (IsEven(roll))
         {
@@ -62,17 +62,13 @@ void GameBetter::rolling(int roll)
         }
         else
         {
-            GetCurPlayer()->setIsJail(false);
             cout << name << " is getting out of the penalty box" << endl;
+            GetCurPlayer()->exitJail();
         }
     }
 
-    GetCurPlayer()->setPlaces(GetCurPlayer()->getPlaces() + roll);
-    if (GetCurPlayer()->getPlaces() > 11)
-    {
-        GetCurPlayer()->setPlaces(GetCurPlayer()->getPlaces() - 12);
-    }
-    cout << GetCurPlayer()->getName() << "'s new location is " << GetCurPlayer()->getPlaces() << endl;
+    GetCurPlayer()->moveNextPlace(roll);
+
     cout << "The category is " << currentCategory() << endl;
 
     askQuestion();
@@ -134,13 +130,9 @@ bool GameBetter::wasCorrectlyAnswered()
 {
     bool ret = true;
 
-    if (false == GetCurPlayer()->getIsJail())
+    if (false == GetCurPlayer()->isInJail())
     {
-        cout << "Answer was correct!!!!" << endl;
-        GetCurPlayer()->increasePurses();
-        cout << GetCurPlayer()->getName() << " now has "
-            << GetCurPlayer()->getPurses() << " Gold Coins." << endl;
-
+        GetCurPlayer()->increaseCoin();
         ret =  didPlayerWin();
     }
 
@@ -159,11 +151,9 @@ void GameBetter::increaseCurPlayer()
 
 bool GameBetter::wrongAnswer()
 {
-    if (false == GetCurPlayer()->getIsJail())
+    if (false == GetCurPlayer()->isInJail())
     {
-        cout << "Question was incorrectly answered" << endl;
-        cout << GetCurPlayer()->getName() + " was sent to the penalty box" << endl;
-        GetCurPlayer()->setIsJail(true);
+        GetCurPlayer()->enterJail();
     }
     
     increaseCurPlayer();
@@ -172,5 +162,5 @@ bool GameBetter::wrongAnswer()
 
 bool GameBetter::didPlayerWin(void)
 {
-    return !(GetCurPlayer()->getPurses() == MAX_COIN_CNT);
+    return !(GetCurPlayer()->getCoin() == MAX_COIN_CNT);
 }
