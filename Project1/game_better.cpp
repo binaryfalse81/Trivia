@@ -3,27 +3,14 @@
 
 using namespace std;
 
-GameBetter::GameBetter() : currentPlayer{ 0 }, playerCnt{ 0 }
+GameBetter::GameBetter() : currentPlayer{ 0 }
 {
-    for (int i = 0; i < MAX_PLAYER_CNT; i++)
-    {
-        aPlayers[i] = new Player{"", 0, 0, false};
-    }
-
     for (int i = 0; i < 50; i++)
     {
         popQuestions.push_back(createPopQuestion(i));
         scienceQuestions.push_back(createScienceQuestion(i));
         sportsQuestions.push_back(createSportQuestion(i));
         rockQuestions.push_back(createRockQuestion(i));
-    }
-}
-
-GameBetter::~GameBetter()
-{
-    for (int i = 0; i < MAX_PLAYER_CNT; i++)
-    {
-        delete(aPlayers[i]);
     }
 }
 
@@ -53,14 +40,10 @@ string GameBetter::createRockQuestion(int index)
 
 bool GameBetter::add(string playerName)
 {
-    aPlayers[playerCnt]->setName(playerName);
-    aPlayers[playerCnt]->setPlaces(0);
-    aPlayers[playerCnt]->setPurses(0);
-    aPlayers[playerCnt]->setInPenaltyBox(false);
-    playerCnt++;
+    users.push_back(new Player(playerName));
 
     cout << playerName << " was added" << endl;
-    cout << "They are player number " << playerCnt << endl;
+    cout << "They are player number " << users.size() << endl;
     return true;
 }
 
@@ -70,7 +53,7 @@ void GameBetter::rolling(int roll)
     cout << name << " is the current player" << endl;
     cout << "They have rolled a " << roll << endl;
 
-    if (GetCurPlayer()->getInPenaltyBox())
+    if (GetCurPlayer()->getIsJail())
     {
         if (IsEven(roll))
         {
@@ -79,7 +62,7 @@ void GameBetter::rolling(int roll)
         }
         else
         {
-            GetCurPlayer()->setInPenaltyBox(false);
+            GetCurPlayer()->setIsJail(false);
             cout << name << " is getting out of the penalty box" << endl;
         }
     }
@@ -97,7 +80,7 @@ void GameBetter::rolling(int roll)
 
 Player* GameBetter::GetCurPlayer()
 {
-    return aPlayers[currentPlayer];
+    return users[currentPlayer];
 }
 
 bool GameBetter::IsEven(int roll)
@@ -151,7 +134,7 @@ bool GameBetter::wasCorrectlyAnswered()
 {
     bool ret = true;
 
-    if (false == GetCurPlayer()->getInPenaltyBox())
+    if (false == GetCurPlayer()->getIsJail())
     {
         cout << "Answer was correct!!!!" << endl;
         GetCurPlayer()->increasePurses();
@@ -168,7 +151,7 @@ bool GameBetter::wasCorrectlyAnswered()
 void GameBetter::increaseCurPlayer()
 {
     currentPlayer++;
-    if (currentPlayer == playerCnt)
+    if (currentPlayer == users.size())
     {
         currentPlayer = 0;
     }
@@ -176,11 +159,11 @@ void GameBetter::increaseCurPlayer()
 
 bool GameBetter::wrongAnswer()
 {
-    if (false == GetCurPlayer()->getInPenaltyBox())
+    if (false == GetCurPlayer()->getIsJail())
     {
         cout << "Question was incorrectly answered" << endl;
         cout << GetCurPlayer()->getName() + " was sent to the penalty box" << endl;
-        GetCurPlayer()->setInPenaltyBox(true);
+        GetCurPlayer()->setIsJail(true);
     }
     
     increaseCurPlayer();

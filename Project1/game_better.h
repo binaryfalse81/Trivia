@@ -11,7 +11,6 @@ using namespace std;
 
 const int MAX_CATEGORY_CNT = 4;
 const int MAX_COIN_CNT = 6;
-const int MAX_PLAYER_CNT = 6;
 
 namespace Category
 {
@@ -24,8 +23,9 @@ namespace Category
 class Player
 {
 public:
-    Player(string name, int places, int purses, bool inPenaltyBox)
-        : name{ name }, places{ places }, purses{ purses }, inPenaltyBox{ inPenaltyBox } { }
+    Player(string name)
+        : name{ name }, places{ 0 }, purses{ 0 }, isJail{ false } { }
+
     void setName(string name)
     {
         this->name = name;
@@ -42,9 +42,9 @@ public:
     {
         this->purses++;
     }
-    void setInPenaltyBox(bool inPenaltyBox)
+    void setIsJail(bool isJail)
     {
-        this->inPenaltyBox = inPenaltyBox;
+        this->isJail = isJail;
     }
 
     string getName(void)
@@ -59,31 +59,29 @@ public:
     {
         return this->purses;
     }
-    bool getInPenaltyBox(void)
+    bool getIsJail(void)
     {
-        return this->inPenaltyBox;
+        return this->isJail;
     }
 
 private:
     string name;
     int places;
     int purses;
-    bool inPenaltyBox;
+    bool isJail;
 };
 
 class GameBetter : public IGame
 {
 public:
     GameBetter();
-    ~GameBetter();
     bool add(string playerName);
     void rolling(int roll);
     bool wasCorrectlyAnswered(void);
     bool wrongAnswer(void);
 
 private:
-    Player* aPlayers[MAX_PLAYER_CNT];
-    int playerCnt;
+    vector<Player*> users;
     int currentPlayer;
 
     list<string> popQuestions;
