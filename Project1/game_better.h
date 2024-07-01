@@ -25,10 +25,6 @@ class Player
 public:
     Player(string name)
         : name{ name }, places{ 0 }, coin{ 0 }, isJail{ false } { }
-    void setPlaces(int places)
-    {
-        this->places = places;
-    }
     void increaseCoin(void)
     {
         this->coin++;
